@@ -30,7 +30,7 @@ class ClientProtocol(asyncio.Protocol):
                     self.send_history()
                 else:
                     self.transport.write(f"Такой логин уже занят. Отключение...".encode())
-                    self.connection_break()
+                    self.transport.close()
             else:
                 self.transport.write(f"Зарегистрируйтесь для начала общения!\n"
                                      f">>> Для регистрации введите команду \"login\" и желаемый логин в формате:\n"
@@ -52,22 +52,8 @@ class ClientProtocol(asyncio.Protocol):
         print("Соединение установлено.")
 
     def connection_lost(self, exception):
-        try:
-            self.server.clients.remove(self)
-            print("Соединение разорвано.")
-        except ValueError:
-            pass
-        except TypeError:
-            pass
-
-    def connection_break(self):
-        try:
-            self.server.clients.remove(self)
-            print("Клиент отключен.")
-        except ValueError:
-            pass
-        except TypeError:
-            pass
+        self.server.clients.remove(self)
+        print("Соединение разорвано.")
 
     def send_history(self):
         self.transport.write(
